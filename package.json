@@ -1,7 +1,7 @@
 {
   "name": "mcd-desk-mate",
   "version": "0.1.0",
-  "description": "麦娘桌面 McDesk —— 基于麦当劳 MCP 的二次元桌面伴侣",
+  "description": "麦娘桌面 McDesk —— 住在你桌面上的二次元麦当劳店员。由真实麦当劳 MCP 驱动：会呼吸、会眨眼、会转头看你，双击就跳舞，券快过期了她会先急。",
   "main": "src/main/index.js",
   "scripts": {
     "start": "electron .",
@@ -10,8 +10,14 @@
   "keywords": [
     "mcp",
     "mcdonalds",
+    "麦当劳",
     "desktop-pet",
-    "electron"
+    "desktop-mate",
+    "桌宠",
+    "二次元",
+    "anime",
+    "electron",
+    "mascot"
   ],
   "license": "MIT",
   "devDependencies": {
