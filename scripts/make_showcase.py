@@ -1,7 +1,12 @@
 """生成 README 展示素材。
 
-1. docs/life.gif   —— 立绘的注视 / 眨眼 / 呼吸循环，直接复用渲染层的分层裁剪比例
-2. docs/play.png   —— 四个玩法面板拼图
+1. docs/life.gif          —— 立绘的注视 / 眨眼 / 呼吸循环，直接复用渲染层的分层裁剪比例
+2. docs/dance.gif         —— 应用真实运行时按节拍截下来的舞蹈
+3. docs/dance-frames.png  —— 六张姿态帧序列（说明「舞蹈靠换素材，不靠变形」）
+4. docs/layers.png        —— 三层立绘分层原理图
+5. docs/play.png          —— 四个玩法面板拼图
+6. docs/preview.png       —— 合成到模拟桌面上的效果图
+7. docs/settings.png      —— 设置窗口
 
 分层比例必须和 src/renderer/style.css 里的 clip-path 保持一致，
 否则素材展示的就不是应用里真实的样子。
@@ -146,9 +151,10 @@ def build_play():
     ]
     imgs = []
     for name, cap in shots:
-        p = f"{SELFTEST}/{name}"
-        if not os.path.exists(p):
-            print("skip missing", p)
+        # .selftest 是临时目录，会被清掉；docs 里留着上一轮回灌的正式素材
+        p = next((q for q in (f"{SELFTEST}/{name}", f"{DOCS}/{name}") if os.path.exists(q)), None)
+        if not p:
+            print("skip missing", name)
             continue
         imgs.append((Image.open(p).convert("RGB"), cap))
 
@@ -177,6 +183,194 @@ def build_play():
         d.text((x + 2, y + cell_h + 4), cap, font=f, fill=(150, 150, 160))
 
     out = f"{DOCS}/play.png"
+    os.makedirs(DOCS, exist_ok=True)
+    canvas.save(out)
+    print("saved", out, canvas.size)
+    return out
+
+
+DANCE_SEQ = [
+    ("base", "待机"),
+    ("d1", "挥手"),
+    ("d2", "跳跃"),
+    ("d3", "比心"),
+    ("d4", "指天"),
+    ("d5", "展臂"),
+    ("d6", "屈膝"),
+]
+
+
+def build_banner():
+    """README 顶部的横向主视觉。"""
+    W, H = 1200, 420
+    canvas = Image.new("RGB", (W, H), (16, 18, 30))
+    d = ImageDraw.Draw(canvas)
+
+    # 斜向渐变 + 右上角一抹红，避免大块纯色显得死
+    for y in range(H):
+        k = y / H
+        d.line([(0, y), (W, y)], fill=(int(15 + k * 14), int(17 + k * 8), int(28 + k * 10)))
+    glow = Image.new("RGB", (W, H), (0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    for r in range(300, 0, -6):
+        a = (1 - r / 300) ** 2
+        gd.ellipse([W - 200 - r, -60 - r * 0.6, W - 200 + r, -60 + r * 0.6],
+                   fill=(int(120 * a), int(20 * a), int(18 * a)))
+    canvas = Image.blend(canvas, glow, 0.55)
+    d = ImageDraw.Draw(canvas)
+
+    # 右侧：立绘贴底
+    pet = Image.open(f"{ASSETS}/mcn-base.png").convert("RGBA")
+    ph = 470
+    ps = ph / pet.height
+    pet = pet.resize((int(round(pet.width * ps)), ph), Image.LANCZOS)
+    px = W - pet.width - 60
+    canvas.paste(pet, (px, H - ph + 40), pet)
+
+    # 左侧：文案
+    d.text((64, 78), "麦娘桌面", font=font(30, bold=True), fill=(214, 48, 42))
+    d.text((64, 118), "McDesk", font=font(62, bold=True), fill=(244, 245, 250))
+    d.text((66, 200), "住在你桌面上的二次元麦当劳店员", font=font(24, bold=True), fill=(206, 210, 222))
+
+    tags = ["真实 MCP 驱动", "35 个 Tool", "会跳舞", "不挡你干活"]
+    x = 66
+    for t in tags:
+        tw = d.textlength(t, font=font(13))
+        d.rounded_rectangle([x, 248, x + tw + 22, 278], radius=15,
+                            fill=(38, 40, 54), outline=(72, 62, 66))
+        d.text((x + 11, 256), t, font=font(13), fill=(232, 168, 150))
+        x += tw + 32
+
+    d.text((66, 306), "券要过期了，她会比你先急。", font=font(15), fill=(150, 156, 172))
+
+    out = f"{DOCS}/banner.png"
+    os.makedirs(DOCS, exist_ok=True)
+    canvas.save(out)
+    print("saved", out, canvas.size)
+    return out
+
+
+def build_dance_frames():
+    """六张姿态帧序列图。
+
+    这张图要一次性说明「舞蹈为什么必须换素材」：七张图的取景、站位、
+    地面线完全一致，只有姿态在变 —— 分层 transform 做不到的正是这一点。
+    """
+    items = []
+    for fid, cap in DANCE_SEQ:
+        p = f"{ASSETS}/mcn-{fid}.png"
+        if not os.path.exists(p):
+            print("skip dance-frames: 缺少", p)
+            return None
+        items.append((Image.open(p).convert("RGBA"), fid, cap))
+
+    cell_h = 300
+    ratio = items[0][0].width / items[0][0].height
+    cell_w = int(round(cell_h * ratio))
+    gap, pad = 10, 18
+    head_h, label_h = 40, 32
+
+    W = pad * 2 + cell_w * len(items) + gap * (len(items) - 1)
+    H = pad * 2 + head_h + cell_h + label_h
+    canvas = Image.new("RGB", (W, H), (22, 24, 30))
+    d = ImageDraw.Draw(canvas)
+
+    d.text((pad, pad - 2), "六张姿态帧 + 一个节拍器", font=font(17, bold=True), fill=(238, 240, 246))
+    d.text((pad + 232, pad + 4), f"每 430ms 换一帧（约 140 BPM），8 拍一循环", font=font(12), fill=(140, 146, 160))
+
+    for k, (im, fid, cap) in enumerate(items):
+        x = pad + k * (cell_w + gap)
+        y = pad + head_h
+        cell = Image.new("RGB", (cell_w, cell_h), (246, 247, 250))
+        cell.paste(im.resize((cell_w, cell_h), Image.LANCZOS), (0, 0), im.resize((cell_w, cell_h), Image.LANCZOS))
+        canvas.paste(cell, (x, y))
+        d.rectangle([x, y, x + cell_w - 1, y + cell_h - 1], outline=(70, 74, 88))
+        if fid != "base":
+            d.rectangle([x, y, x + cell_w - 1, y + 2], fill=(214, 48, 42))
+        d.text((x + 2, y + cell_h + 6), f"{fid}  {cap}", font=font(13), fill=(168, 174, 188))
+
+    out = f"{DOCS}/dance-frames.png"
+    os.makedirs(DOCS, exist_ok=True)
+    canvas.save(out)
+    print("saved", out, canvas.size)
+    return out
+
+
+def build_layers():
+    """分层原理图：一张立绘被切成三层，各自独立变换。
+
+    左边是完整立绘叠上两条真实的 clip-path 分界线；
+    右边三层被拆开单放，每层标注它在注视跟随里承担的幅度。
+    比例取自 style.css，不另画一套。
+    """
+    src = Image.open(f"{ASSETS}/mcn-base.png").convert("RGBA")
+    body_h = 460
+    s = body_h / src.height
+    img_w, img_h = int(round(src.width * s)), body_h
+    img = src.resize((img_w, img_h), Image.LANCZOS)
+
+    LAYERS = [
+        (0.00, 0.30, "头", "承担主要转向", "inset(0 0 70% 0)"),
+        (0.27, 0.64, "上身", "跟随一点点", "inset(27% 0 36% 0)"),
+        (0.62, 1.00, "下身", "几乎不动", "inset(62% 0 0 0)"),
+    ]
+
+    pad, gap = 22, 16
+    cell_pad = 8
+    col_w = img_w + cell_pad * 2
+    head_h, label_h = 62, 46
+    W = pad * 2 + col_w + gap + (col_w + gap) * 3
+    H = pad * 2 + head_h + img_h + label_h
+    canvas = Image.new("RGB", (W, H), (22, 24, 30))
+    d = ImageDraw.Draw(canvas)
+
+    d.text((pad, pad - 4), "一张立绘，三层独立变换",
+           font=font(19, bold=True), fill=(238, 240, 246))
+    d.text((pad, pad + 26), "没有骨骼、没有额外素材，只用 CSS clip-path + 各自的 transform——"
+                           "幅度差拉开了，看起来才像脖子在转，而不是整块板子在晃。",
+           font=font(12), fill=(140, 146, 160))
+
+    y0 = pad + head_h
+    x0 = pad
+    bg = Image.new("RGB", (col_w, img_h), (246, 247, 250))
+    bg.paste(img, (cell_pad, 0), img)
+    canvas.paste(bg, (x0, y0))
+    d.rectangle([x0, y0, x0 + col_w - 1, y0 + img_h - 1], outline=(70, 74, 88))
+
+    # 两条真实的分界虚线 + 区间括号
+    for top, bottom, name, _, _ in LAYERS:
+        for frac, color in ((top, (214, 48, 42)), (bottom, (214, 48, 42))):
+            yy = y0 + int(img_h * frac)
+            for xx in range(x0, x0 + col_w, 8):
+                d.line([(xx, yy), (xx + 4, yy)], fill=color, width=2)
+        ty = y0 + int(img_h * (top + bottom) / 2) - 9
+        d.text((x0 + cell_pad + 6, ty), name, font=font(15, bold=True), fill=(214, 48, 42))
+    d.text((x0 + 2, y0 + img_h + 10), "完整立绘 · 虚线是真实的分界位置",
+           font=font(12), fill=(168, 174, 188))
+
+    # 三层拆开单放
+    for k, (top, bottom, name, role, clip) in enumerate(LAYERS):
+        x = x0 + col_w + gap + k * (col_w + gap)
+        piece = src.crop((0, int(src.height * top), src.width, int(src.height * bottom)))
+        piece = piece.resize((img_w, int(round(img_h * (bottom - top)))), Image.LANCZOS)
+
+        cell = Image.new("RGB", (col_w, img_h), (246, 247, 250))
+        cell.paste(piece, (cell_pad, int(round(img_h * top))), piece)
+        canvas.paste(cell, (x, y0))
+        d.rectangle([x, y0, x + col_w - 1, y0 + img_h - 1], outline=(70, 74, 88))
+
+        # 只保留该层，其余压暗 —— 让「这一层是这块」一目了然
+        dark = Image.new("RGB", (col_w, img_h), (246, 247, 250))
+        dim = Image.new("RGB", img.size, (232, 233, 238))
+        dark.paste(dim, (cell_pad, 0))
+        dark.paste(piece, (cell_pad, int(round(img_h * top))), piece)
+        canvas.paste(dark, (x, y0))
+
+        d.rectangle([x, y0, x + col_w - 1, y0 + 2], fill=(214, 48, 42))
+        d.text((x + 2, y0 + img_h + 6), f"{name} · {role}", font=font(14, bold=True), fill=(238, 240, 246))
+        d.text((x + 2, y0 + img_h + 26), clip, font=font(12), fill=(140, 146, 160))
+
+    out = f"{DOCS}/layers.png"
     os.makedirs(DOCS, exist_ok=True)
     canvas.save(out)
     print("saved", out, canvas.size)
@@ -281,5 +475,7 @@ def build_dance():
 if __name__ == "__main__":
     build_gif()
     build_dance()
+    build_dance_frames()
+    build_layers()
     build_play()
     build_desktop()
