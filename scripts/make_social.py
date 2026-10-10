@@ -12,6 +12,9 @@
   * 文字必须够大够粗，缩略后还能读出「麦娘」两个字；
   * 用高对比配色，避免浅灰底浅字在信息流里糊成一片。
 
+中英两版都要出：中文版给 GitHub 的 Social Preview 和国内渠道，英文版给
+X / Reddit / Hacker News —— 英文渠道配一张中文卡片，点进来的人会走掉。
+
 用法：
     python scripts/make_social.py
 """
@@ -29,9 +32,33 @@ W, H = 1280, 640
 BG_TOP = (28, 22, 30)        # 深紫黑，让角色和黄色都跳出来
 BG_BOT = (48, 30, 44)
 ACCENT = (255, 188, 13)      # 麦当劳金
-ACCENT2 = (255, 66, 66)      # 麦当劳红
 TXT = (255, 255, 255)
 SUB = (196, 190, 208)
+
+LANG = {
+    "zh": {
+        "out": "social.png",
+        "badge": "麦当劳 MCP 真实驱动",
+        "title": "麦娘桌面",
+        "sub": "住在你桌面上的",
+        "sub2": "二次元麦当劳店员",
+        "tags": ["会呼吸 · 会眨眼 · 会转头看你", "双击就跳舞", "券快过期了她先急"],
+        "foot": "Real McDonald's MCP · 35 tools · Electron",
+        "title_size": 96,
+    },
+    "en": {
+        "out": "social-en.png",
+        "badge": "Driven by McDonald's real MCP",
+        "title": "McDesk",
+        "sub": "An anime McDonald's crew member",
+        "sub2": "who lives on your desktop",
+        "tags": ["Breathes · blinks · follows your cursor",
+                 "Dances on double-click",
+                 "Warns you before coupons expire"],
+        "foot": "35 MCP tools · MIT · Electron",
+        "title_size": 104,
+    },
+}
 
 
 def font(size, bold=False):
@@ -79,7 +106,8 @@ def glow(card, cx, cy, r, color, alpha):
     card.paste(layer, (cx - r, cy - r), mask)
 
 
-def main():
+def build(lang):
+    cfg = LANG[lang]
     card = vgrad(W, H, BG_TOP, BG_BOT)
     d = ImageDraw.Draw(card)
 
@@ -87,51 +115,56 @@ def main():
     glow(card, W - 300, 120, 340, (96, 62, 40), 78)
     glow(card, W - 380, 90, 200, (140, 90, 50), 52)
 
-    # 左侧：标题区
     x = 72
     f_brand = font(34)
-    f_title = font(96, bold=True)
+    f_title = font(cfg["title_size"], bold=True)
     f_sub = font(38)
     f_hook = font(30)
 
-    badge = "麦当劳 MCP 真实驱动"
-    bw = int(d.textlength(badge, font=f_brand)) + 52
+    bw = int(d.textlength(cfg["badge"], font=f_brand)) + 52
     d.rounded_rectangle([x, 92, x + bw, 146], radius=27, fill=ACCENT)
-    d.text((x + 26, 100), badge, font=f_brand, fill=(38, 26, 10))
+    d.text((x + 26, 100), cfg["badge"], font=f_brand, fill=(38, 26, 10))
 
-    d.text((x, 176), "麦娘桌面", font=f_title, fill=TXT)
-    tw = d.textlength("麦娘桌面", font=f_title)
-    d.text((x + tw + 18, 210), "McDesk", font=font(52, bold=True), fill=ACCENT)
+    d.text((x, 176), cfg["title"], font=f_title, fill=TXT)
+    tw = d.textlength(cfg["title"], font=f_title)
+    if lang == "zh":
+        d.text((x + tw + 18, 210), "McDesk", font=font(52, bold=True), fill=ACCENT)
 
-    d.text((x, 300), "住在你桌面上的", font=f_sub, fill=SUB)
-    d.text((x, 348), "二次元麦当劳店员", font=f_sub, fill=TXT)
+    d.text((x, 300), cfg["sub"], font=f_sub, fill=SUB)
+    d.text((x, 348), cfg["sub2"], font=f_sub, fill=TXT)
 
-    # 底部三枚标签——缩略图里看不清没关系，点开前放大时会读到
-    tags = ["会呼吸 · 会眨眼 · 会转头看你", "双击就跳舞", "券快过期了她先急"]
-    ty = 448
+    # 底部标签——缩略图里看不清没关系，点开前放大时会读到。
+    # 必须做换行：英文标签比中文长得多，一行铺过去会被右侧立绘压住。
+    ty = 420
     tx = x
     ft = font(26)
-    for t in tags:
+    limit = 860                    # 立绘从 x≈934 起，标签留出安全距离
+    for t in cfg["tags"]:
         w = int(d.textlength(t, font=ft)) + 32
+        if tx > x and tx + w > x + limit:
+            tx = x
+            ty += 58
         d.rounded_rectangle([tx, ty, tx + w, ty + 48], radius=24, fill=(70, 52, 66))
         d.text((tx + 16, ty + 10), t, font=ft, fill=(232, 226, 240))
         tx += w + 14
 
-    d.text((x, 548), "Real McDonald's MCP · 35 tools · Electron", font=f_hook,
-           fill=(150, 142, 164))
+    d.text((x, 548), cfg["foot"], font=f_hook, fill=(150, 142, 164))
 
     # 右侧：角色（贴底站立，略出血制造「从画面外走进来」的感觉）
     pet = Image.open(os.path.join(ASSETS, "mcn-happy.png")).convert("RGBA")
     ph = 600
     pw = round(pet.width * ph / pet.height)
     pet = pet.resize((pw, ph), Image.LANCZOS)
-    px = W - pw + 54
-    py = H - ph + 34
-    card.paste(pet, (px, py), pet)
+    card.paste(pet, (W - pw + 54, H - ph + 34), pet)
 
-    out = os.path.join(DOCS, "social.png")
+    out = os.path.join(DOCS, cfg["out"])
     card.save(out)
     print(f"[social] {out}  {card.size}")
+
+
+def main():
+    build("zh")
+    build("en")
 
 
 if __name__ == "__main__":

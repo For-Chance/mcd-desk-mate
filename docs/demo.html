@@ -128,8 +128,8 @@
 <body>
 
 <div class="top">
-  <span class="pill">麦当劳官方 MCP 驱动</span>
-  <a class="back" href="./index.html">← 回到主页</a>
+  <span class="pill" data-i18n="pill">麦当劳官方 MCP 驱动</span>
+  <a class="back" href="./index.html" data-i18n="back">← 回到主页</a>
 </div>
 
 <div class="stage">
@@ -146,10 +146,10 @@
 </div>
 
 <div class="bottom">
-  <p class="hint">把鼠标移到她身上她会跟着看 · <b>双击她就跳舞</b></p>
+  <p class="hint" id="hint"></p>
   <div class="row">
-    <button class="btn btn-play" id="play">让她跳一段舞</button>
-    <a class="btn btn-go" href="https://github.com/For-Chance/mcd-desk-mate">★ 去 GitHub 看完整的她</a>
+    <button class="btn btn-play" id="play" data-i18n="play">让她跳一段舞</button>
+    <a class="btn btn-go" href="https://github.com/For-Chance/mcd-desk-mate" data-i18n="go">★ 去 GitHub 看完整的她</a>
   </div>
 </div>
 
@@ -183,13 +183,41 @@
   ];
   var DANCE_FRAMES = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'];
 
-  var LINES = [
-    '双击我，我给你跳一段舞！',
-    '要吃点什么吗？我可以喂给你看（不对，是你喂我）。',
-    '我的节气门票还没集齐呢…',
-    '记得别让券过期啦。',
-    '这个页面上我只是站在这儿，真正的我会看你的券、你的积分。'
-  ];
+  // 界面文案：跟着浏览器语言走。海外渠道（HN / Reddit / X）点进来
+  // 看到一屏中文会直接关掉，这里不值得为省几行代码牺牲那部分转化。
+  // ?lang=en / ?lang=zh 可以强制指定 —— 往海外渠道分享时直接用带参数的链接，
+  // 免得对方浏览器报的是 zh 却又看不懂中文。
+  var forced = (location.search.match(/[?&]lang=(en|zh)/i) || [])[1];
+  var EN = forced ? forced.toLowerCase() === 'en'
+                  : !/^zh/i.test(navigator.language || 'zh');
+  var T = EN ? {
+    pill: "Driven by McDonald's official MCP",
+    back: '← Back to home',
+    play: 'Make her dance',
+    go: '★ See the full version on GitHub',
+    hint: 'Move your cursor near her — she follows · <b>Double-click her to dance</b>',
+    lines: [
+      "Double-click me and I'll dance!",
+      'Want a snack? I can show you one (wrong way round — you feed me).',
+      "I still haven't collected all my solar-term tickets…",
+      "Don't let your coupons expire.",
+      "On this page I'm just standing here. The real me watches your coupons and your points."
+    ]
+  } : {
+    pill: '麦当劳官方 MCP 驱动',
+    back: '← 回到主页',
+    play: '让她跳一段舞',
+    go: '★ 去 GitHub 看完整的她',
+    hint: '把鼠标移到她身上她会跟着看 · <b>双击她就跳舞</b>',
+    lines: [
+      '双击我，我给你跳一段舞！',
+      '要吃点什么吗？我可以喂给你看（不对，是你喂我）。',
+      '我的节气门票还没集齐呢…',
+      '记得别让券过期啦。',
+      '这个页面上我只是站在这儿，真正的我会看你的券、你的积分。'
+    ]
+  };
+  var LINES = T.lines;
 
   // ---------------------------------------------------------- 状态
   var tx = 0, ty = 0;        // 目标视线 (-1..1)
@@ -348,6 +376,15 @@
   });
 
   // ---------------------------------------------------------- 启动
+  // 套用文案
+  document.querySelectorAll('[data-i18n]').forEach(function (el) {
+    var k = el.getAttribute('data-i18n');
+    if (T[k]) el.textContent = T[k];
+  });
+  document.getElementById('hint').innerHTML = T.hint;
+  document.documentElement.lang = EN ? 'en' : 'zh-CN';
+  document.title = EN ? 'Live demo · McDesk' : '在线试玩 · 麦娘桌面 McDesk';
+
   // 预加载舞蹈帧，免得第一拍卡一下
   DANCE_FRAMES.forEach(function (id) { new Image().src = ASSET(id); });
 
