@@ -364,7 +364,7 @@ MCP 限流为每 Token 每分钟 600 次。调大播报间隔即可。
 会。所以界面上的按钮文案写的就是实际代价，而且必须由你亲手点确认。程序不会自动抽、不会连抽，也不会替你决定。
 
 **素材是怎么来的？**
-角色为原创生成形象，未使用麦当劳商标或官方视觉资产。原始立绘在 `assets/raw/`，`scripts/cutout.py` 负责把模型输出的棋盘格背景处理成透明 PNG（含边缘颜色去污，避免在深色桌面上出现白边）。README 里的 GIF 与面板拼图由 `scripts/make_showcase.py` 生成，其中 GIF 的图层裁剪比例与 `style.css` 的 `clip-path` 保持一致——**素材展示的就是应用里真实的样子**，不是另做一版宣传动画。
+角色为原创生成形象，未使用麦当劳商标或官方视觉资产。原始立绘在 `assets/raw/`。`scripts/cutout.py` 负责把模型输出的背景处理成透明 PNG（含封闭口袋补洞与边缘颜色去污，避免在深色桌面上出现棋盘格残留或白边）；`scripts/prepare_dance.py` 把九帧（含待机三表情）归一到同一坐标系并输出 `assets/dance.json`。README 里的 GIF 与面板拼图由 `scripts/make_showcase.py` 生成，其中 `life.gif` 的图层裁剪比例与 `style.css` 的 `clip-path` 保持一致，`dance.gif` 则是应用真实运行时按节拍截下来的窗口——**素材展示的就是应用里真实的样子**，不是另做一版宣传动画。
 
 ## 目标用户
 
