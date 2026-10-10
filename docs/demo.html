@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>在线试玩 · 麦娘桌面 McDesk</title>
+<meta name="description" content="不用安装，点开就能看麦娘动起来：鼠标移到哪她的头就转到哪，双击跳一段舞。">
+<meta property="og:title" content="麦娘桌面 McDesk · 在线试玩">
+<meta property="og:description" content="不装环境、不要账号，点开就能看她转头、眨眼、跳舞。">
+<meta property="og:image" content="https://for-chance.github.io/mcd-desk-mate/social.png">
+<style>
+  :root{
+    --gold:#ffbc0d; --red:#ff4a42; --txt:#f6f4fa; --sub:#a89fb8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(900px 620px at 78% 8%, rgba(255,188,13,.15), transparent 62%),
+               radial-gradient(720px 560px at 14% 96%, rgba(255,74,66,.13), transparent 62%),
+               linear-gradient(168deg,#1a1420,#241a2c 58%,#181220);
+    color:var(--txt);overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    display:flex;flex-direction:column;height:100dvh;
+  }
+
+  /* ---------- 顶栏 ---------- */
+  .top{
+    display:flex;align-items:center;gap:14px;
+    padding:16px 22px;flex:0 0 auto;z-index:5;
+  }
+  .pill{
+    background:var(--gold);color:#2a1c05;font-weight:800;font-size:12.5px;
+    padding:5px 13px;border-radius:999px;white-space:nowrap;
+  }
+  .top .back{margin-left:auto;color:var(--sub);text-decoration:none;font-size:13.5px}
+  .top .back:hover{color:var(--gold)}
+
+  /* ---------- 舞台 ---------- */
+  .stage{
+    flex:1 1 auto;position:relative;
+    display:flex;align-items:center;justify-content:center;
+    min-height:0;
+  }
+  #pet-wrap{
+    position:relative;
+    height:min(60vh,540px);
+    aspect-ratio:2/3;
+    cursor:pointer;
+    will-change:transform;
+  }
+  #pet-breathe{
+    width:100%;height:100%;
+    animation:breathe 3.8s ease-in-out infinite;
+    transform-origin:50% 100%;
+    will-change:transform;
+  }
+  @keyframes breathe{
+    0%,100%{transform:translateY(0) scaleY(1)}
+    50%    {transform:translateY(-5px) scaleY(1.009)}
+  }
+  #pet-stack{
+    position:relative;width:100%;height:100%;
+    transform-origin:50% 100%;
+    filter:drop-shadow(0 26px 34px rgba(0,0,0,.5));
+    will-change:transform;
+  }
+  /* 三层是同一张图的三个切片，叠在一起。各自 clip-path 切出自己那块，
+     再各自做不同幅度的 transform —— 幅度差拉开了，才像脖子在转。 */
+  #pet-stack .layer{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:contain;user-select:none;-webkit-user-drag:none;
+    backface-visibility:hidden;
+  }
+  .layer.head{clip-path:inset(0 0 70% 0);transform-origin:50% 28%;will-change:transform}
+  .layer.body{clip-path:inset(27% 0 36% 0);transform-origin:50% 66%;will-change:transform}
+  .layer.legs{clip-path:inset(62% 0 0 0);transform-origin:50% 100%;will-change:transform}
+
+  /* ---------- 气泡 ---------- */
+  #bubble{
+    position:absolute;left:50%;top:6%;
+    transform:translate(-50%,10px) scale(.92);
+    max-width:min(76vw,340px);
+    background:#fff;color:#241c2c;
+    padding:12px 18px;border-radius:16px;
+    font-size:14.5px;line-height:1.6;font-weight:600;
+    opacity:0;pointer-events:none;
+    transition:opacity .22s ease,transform .22s cubic-bezier(.2,1.4,.4,1);
+    box-shadow:0 14px 30px -8px rgba(0,0,0,.55);
+    z-index:4;
+  }
+  #bubble.show{opacity:1;transform:translate(-50%,0) scale(1)}
+  /* 尾巴 */
+  #bubble::after{
+    content:'';position:absolute;left:50%;bottom:-7px;margin-left:-8px;
+    border:8px solid transparent;border-top-color:#fff;border-bottom:0;
+  }
+
+  /* ---------- 底部 ---------- */
+  .bottom{
+    flex:0 0 auto;padding:14px 22px calc(20px + env(safe-area-inset-bottom));
+    text-align:center;z-index:5;
+  }
+  .hint{color:var(--sub);font-size:13.5px;margin-bottom:12px}
+  .hint b{color:var(--txt)}
+  .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:12px 24px;border-radius:12px;font-size:14.5px;font-weight:700;
+    text-decoration:none;border:none;cursor:pointer;font-family:inherit;
+    transition:transform .15s ease;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn-play{background:rgba(255,188,13,.16);color:var(--gold);border:1.5px solid rgba(255,188,13,.45)}
+  .btn-go{background:var(--gold);color:#2a1c05;box-shadow:0 10px 26px -10px rgba(255,188,13,.7)}
+
+  /* 手机竖屏时把立绘放大一点 */
+  @media (max-height:680px){
+    #pet-wrap{height:min(52vh,420px)}
+    .hint{font-size:12.5px;margin-bottom:9px}
+  }
+  @media (max-width:420px){
+    .top{padding:12px 16px}
+    .bottom{padding:10px 16px calc(16px + env(safe-area-inset-bottom))}
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <span class="pill">麦当劳官方 MCP 驱动</span>
+  <a class="back" href="./index.html">← 回到主页</a>
+</div>
+
+<div class="stage">
+  <div id="bubble"><p id="bubble-text"></p></div>
+  <div id="pet-wrap" title="点我 / 双击我">
+    <div id="pet-breathe">
+      <div id="pet-stack">
+        <img class="layer legs" src="./web/mcn-base.png" alt="麦娘">
+        <img class="layer body" src="./web/mcn-base.png" alt="">
+        <img class="layer head" src="./web/mcn-base.png" alt="">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom">
+  <p class="hint">把鼠标移到她身上她会跟着看 · <b>双击她就跳舞</b></p>
+  <div class="row">
+    <button class="btn btn-play" id="play">让她跳一段舞</button>
+    <a class="btn btn-go" href="https://github.com/For-Chance/mcd-desk-mate">★ 去 GitHub 看完整的她</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var ASSET = function (id) { return './web/mcn-' + id + '.png'; };
+
+  var wrap    = document.getElementById('pet-wrap');
+  var breathe = document.getElementById('pet-breathe');
+  var stack   = document.getElementById('pet-stack');
+  var bubble  = document.getElementById('bubble');
+  var bubbleText = document.getElementById('bubble-text');
+  var playBtn = document.getElementById('play');
+
+  var layers = [].slice.call(stack.querySelectorAll('.layer'));
+  var headLayer = stack.querySelector('.head');
+  var bodyLayer = stack.querySelector('.body');
+
+  var DANCE_BEAT_MS = 430;
+  var DANCE_ROUTINE = [
+    { f: 'd5' },
+    { f: 'd5' },
+    { f: 'd3' },
+    { f: 'd1' },
+    { f: 'd4', lift: -7 },
+    { f: 'd5' },
+    { f: 'd6', lift: 9, squash: 0.055 },
+    { f: 'd2', lift: -16 }
+  ];
+  var DANCE_FRAMES = ['d1', 'd2', 'd3', 'd4', 'd5', 'd6'];
+
+  var LINES = [
+    '双击我，我给你跳一段舞！',
+    '要吃点什么吗？我可以喂给你看（不对，是你喂我）。',
+    '我的节气门票还没集齐呢…',
+    '记得别让券过期啦。',
+    '这个页面上我只是站在这儿，真正的我会看你的券、你的积分。'
+  ];
+
+  // ---------------------------------------------------------- 状态
+  var tx = 0, ty = 0;        // 目标视线 (-1..1)
+  var cx = 0, cy = 0;        // 当前视线（插值后）
+  var dancing = false;
+  var danceTimer = null;
+  var blinkTimer = null;
+  var expression = 'normal';
+  var lift = 0, squash = 0;
+  var lastMove = Date.now();
+
+  // ---------------------------------------------------------- 视线
+  function onMove(ev) {
+    var pt = ev.touches ? ev.touches[0] : ev;
+    var r = wrap.getBoundingClientRect();
+    var mx = (pt.clientX - (r.left + r.width / 2)) / (r.width / 2);
+    var my = (pt.clientY - (r.top + r.height / 2)) / (r.height / 2);
+    tx = Math.max(-1.4, Math.min(1.4, mx));
+    ty = Math.max(-1.2, Math.min(1.2, my));
+    lastMove = Date.now();
+  }
+  window.addEventListener('mousemove', onMove, { passive: true });
+  window.addEventListener('touchmove', onMove, { passive: true });
+
+  function frame() {
+    // 平滑跟随：直接绑鼠标会太"硬"，插值之后才像眼睛在追
+    cx += (tx - cx) * 0.13;
+    cy += (ty - cy) * 0.10;
+
+    if (!dancing) {
+      // 幅度刻意拉开：头 7.5px，上身只有 2.2px —— 差太小就像整块板子在晃
+      headLayer.style.transform =
+        'translateX(' + (cx * 7.5).toFixed(2) + 'px) ' +
+        'translateY(' + (cy * 3.2).toFixed(2) + 'px) ' +
+        'scaleX(' + (1 - Math.abs(cx) * 0.085).toFixed(4) + ')';
+      bodyLayer.style.transform = 'translateX(' + (cx * 2.2).toFixed(2) + 'px)';
+      stack.style.transform = 'translateY(0px)';
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------------------------------------------------------- 表情
+  function applyExpression(name) {
+    expression = name;
+    var src = ASSET(name);
+    layers.forEach(function (img) { img.src = src; });
+  }
+
+  function scheduleBlink() {
+    clearTimeout(blinkTimer);
+    blinkTimer = setTimeout(function () {
+      if (expression === 'normal' && !dancing) {
+        applyExpression('blink');
+        setTimeout(function () {
+          if (expression === 'blink') applyExpression('normal');
+        }, 135);
+      }
+      scheduleBlink();
+    }, 2600 + Math.random() * 4200);
+  }
+
+  // ---------------------------------------------------------- 气泡
+  function say(text, holdMs) {
+    bubbleText.textContent = text;
+    bubble.classList.add('show');
+    clearTimeout(say._t);
+    say._t = setTimeout(function () { bubble.classList.remove('show'); }, holdMs || 4200);
+  }
+
+  // ---------------------------------------------------------- 舞蹈
+  function danceFrame(id) {
+    var src = ASSET(id);
+    layers.forEach(function (img) { img.src = src; });
+  }
+
+  function stopDance() {
+    dancing = false;
+    clearTimeout(danceTimer);
+    danceTimer = null;
+    lift = 0; squash = 0;
+    stack.style.transform = 'translateY(0px)';
+    headLayer.style.transform = '';
+    bodyLayer.style.transform = '';
+    applyExpression('happy');
+    setTimeout(function () {
+      if (!dancing && expression === 'happy') applyExpression('normal');
+    }, 900);
+    scheduleBlink();
+  }
+
+  function startDance(loops) {
+    if (dancing) return;
+    loops = loops || 3;
+    dancing = true;
+    clearTimeout(blinkTimer);
+    bubble.classList.remove('show');
+
+    var total = DANCE_ROUTINE.length * loops;
+    var beat = -1;
+
+    function step() {
+      if (!dancing) return;
+      beat += 1;
+      if (beat >= total) { stopDance(); return; }
+
+      var it = DANCE_ROUTINE[beat % DANCE_ROUTINE.length];
+      danceFrame(it.f);
+
+      // 姿态给了造型，力度给了动能：下蹲拍往下沉，跳跃拍往上窜
+      lift = it.lift || 0;
+      squash = it.squash || 0;
+      stack.style.transform =
+        'translateY(' + lift + 'px) scale(1,' + (1 - squash).toFixed(3) + ')';
+
+      // 每一拍落地的那一下顿挫 —— 没有它，换帧只是幻灯片
+      stack.animate(
+        [{ transform: stack.style.transform },
+         { transform: 'translateY(' + (lift + 3) + 'px) scale(1,' + (1 - squash + 0.012).toFixed(3) + ')' },
+         { transform: stack.style.transform }],
+        { duration: 180, easing: 'ease-out' }
+      );
+
+      danceTimer = setTimeout(step, DANCE_BEAT_MS);
+    }
+
+    // 起势：先沉半拍再起，第一帧才不是"啪"地出现
+    stack.animate(
+      [{ transform: 'translateY(0) scale(1,1)' },
+       { transform: 'translateY(5px) scale(1,0.985)' },
+       { transform: 'translateY(0) scale(1,1)' }],
+      { duration: 260, easing: 'ease-out' }
+    );
+    danceTimer = setTimeout(step, 260);
+  }
+
+  window.__mcDance = startDance;
+
+  // ---------------------------------------------------------- 交互
+  wrap.addEventListener('click', function () {
+    if (dancing) return;
+    applyExpression(Math.random() < 0.5 ? 'happy' : 'normal');
+    say(LINES[Math.floor(Math.random() * LINES.length)]);
+  });
+
+  wrap.addEventListener('dblclick', function (e) {
+    e.preventDefault();
+    startDance(3);
+  });
+
+  playBtn.addEventListener('click', function () {
+    if (dancing) return;
+    say('看好啦～', 2200);
+    setTimeout(function () { startDance(3); }, 420);
+  });
+
+  // ---------------------------------------------------------- 启动
+  // 预加载舞蹈帧，免得第一拍卡一下
+  DANCE_FRAMES.forEach(function (id) { new Image().src = ASSET(id); });
+
+  requestAnimationFrame(frame);
+  scheduleBlink();
+
+  // 进来先自己跳一小段：光靠文字提示，很多人不会想到要双击
+  setTimeout(function () {
+    if (Date.now() - lastMove < 1500) return;   // 用户已经在动了就别抢戏
+    startDance(1);
+  }, 1500);
+})();
+</script>
+</body>
+</html>
