@@ -14,6 +14,9 @@
 
 不是聊天框里的问答机器人——是常驻桌面、会呼吸、会眨眼、会转头看你、会在券过期之前先替你急一眼的角色。驱动她的是**麦当劳中国官方 MCP Server** 的真实返回值，不是写死的假数据。
 
+> ### ▶ [**点这里在线试玩**](https://for-chance.github.io/mcd-desk-mate/demo.html)
+> 不用装环境、不用申请 Token、不用麦当劳账号。点开就能看她转头、眨眼、跳舞——双击她试试。
+
 > **验证状态**：已用真实 MCP Token 完成端到端实测——握手成功、`tools/list` 返回 **35 个 Tool**，本项目用到的 **12 个 Tool 全部真实调用通过**。下文所有截图与播报文案均取自真实账号数据的实跑结果。
 
 ## 目录
@@ -368,11 +371,17 @@ mcd-desk-mate/
 │  ├─ cutout.py          立绘抠图、封闭口袋补洞、边缘去污、水印清除
 │  ├─ prepare_dance.py   舞蹈帧管线：抠图 → 尺度归一 → 锚点对齐 → 合成
 │  ├─ make_showcase.py   生成本 README 的全部图片与 GIF
+│  ├─ make_social.py     生成社交分享卡片（1280x640）
+│  ├─ make_promo.py      生成中文平台竖版图文
+│  ├─ make_webdemo.py    生成在线试玩页用的 web 优化帧
 │  ├─ verify-mcp.js      真实 MCP 调用验证器
 │  ├─ verify-calls.json  验证用调用清单
 │  ├─ check-brain.js     端到端播报校验
 │  └─ check-fun.js       玩法能力联调（只读，不触发抽奖）
-├─ docs/                 README 展示素材
+├─ docs/                 GitHub Pages 站点 + README 展示素材
+│  ├─ index.html         落地页
+│  ├─ demo.html          在线试玩（不用装环境）
+│  └─ web/               试玩页用的 web 优化帧（400x600）
 ├─ CONTEST_DECLARATION.md
 ├─ MCP_INTEGRATION.md
 └─ mcp-config.example.json

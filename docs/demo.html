@@ -220,12 +220,14 @@
     cy += (ty - cy) * 0.10;
 
     if (!dancing) {
-      // 幅度刻意拉开：头 7.5px，上身只有 2.2px —— 差太小就像整块板子在晃
+      // 幅度刻意拉开：头 10px，上身只有 3.2px —— 差太小就像整块板子在晃。
+      // 比桌宠里（7.5 / 2.2）略大一点，因为这是在网页上「演示」给她看，
+      // 效果得让第一次来的人一眼就察觉到。
       headLayer.style.transform =
-        'translateX(' + (cx * 7.5).toFixed(2) + 'px) ' +
-        'translateY(' + (cy * 3.2).toFixed(2) + 'px) ' +
-        'scaleX(' + (1 - Math.abs(cx) * 0.085).toFixed(4) + ')';
-      bodyLayer.style.transform = 'translateX(' + (cx * 2.2).toFixed(2) + 'px)';
+        'translateX(' + (cx * 10).toFixed(2) + 'px) ' +
+        'translateY(' + (cy * 4).toFixed(2) + 'px) ' +
+        'scaleX(' + (1 - Math.abs(cx) * 0.10).toFixed(4) + ')';
+      bodyLayer.style.transform = 'translateX(' + (cx * 3.2).toFixed(2) + 'px)';
       stack.style.transform = 'translateY(0px)';
     }
     requestAnimationFrame(frame);
