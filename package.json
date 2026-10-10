@@ -1,0 +1,20 @@
+{
+  "name": "mcd-desk-mate",
+  "version": "0.1.0",
+  "description": "麦娘桌面 McDesk —— 基于麦当劳 MCP 的二次元桌面伴侣",
+  "main": "src/main/index.js",
+  "scripts": {
+    "start": "electron .",
+    "preprocess": "node scripts/preprocess-assets.js"
+  },
+  "keywords": [
+    "mcp",
+    "mcdonalds",
+    "desktop-pet",
+    "electron"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^44.7.0"
+  }
+}

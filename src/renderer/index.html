@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' 'unsafe-inline' data: file:; img-src 'self' data: file:;">
+  <title>麦娘桌面 McDesk</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="stage">
+    <!-- 情绪粒子（♪ / Z / +kcal），飘在最上层 -->
+    <div id="fx"></div>
+
+    <div id="bubble" role="status" aria-live="polite">
+      <p id="bubble-text"></p>
+    </div>
+
+    <!-- 状态徽章：券到期时头顶冒感叹号，睡着时是月亮 -->
+    <div id="badge"></div>
+
+    <div id="pet-wrap">
+      <!-- pet-wrap 由 JS 做物理量（倾斜 / 抬升 / 挤压），
+           pet-breathe 单独承担 CSS 呼吸动画，两者互不覆盖同一个 transform -->
+      <div id="pet-breathe">
+        <div id="pet-stack">
+          <img class="layer legs" src="../../assets/mcn-base.png" alt="麦娘" draggable="false">
+          <img class="layer body" src="../../assets/mcn-base.png" alt="" draggable="false">
+          <img class="layer head" src="../../assets/mcn-base.png" alt="" draggable="false">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="pet.js"></script>
+</body>
+</html>

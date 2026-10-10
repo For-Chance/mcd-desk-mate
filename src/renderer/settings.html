@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline';">
+  <title>麦娘桌面 · 设置</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #1b1b1f;
+      color: #f1efe8;
+      font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      padding: 22px 24px;
+      user-select: none;
+    }
+
+    h1 { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+    .hint { color: #9b9a94; font-size: 12px; margin-bottom: 18px; }
+    .hint a { color: #7fb2f0; text-decoration: none; cursor: pointer; }
+
+    label { display: block; font-size: 12px; color: #c9c7c0; margin-bottom: 6px; }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"] {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 8px;
+      border: 0.5px solid rgba(255, 255, 255, 0.18);
+      background: #26262b;
+      color: #f1efe8;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+    input:focus { border-color: #5b8fd6; }
+
+    .field { margin-bottom: 16px; }
+
+    .row { display: flex; align-items: center; gap: 10px; }
+
+    button {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 0.5px solid rgba(255, 255, 255, 0.22);
+      background: transparent;
+      color: #f1efe8;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    button:hover { background: rgba(255, 255, 255, 0.07); }
+    button.primary { background: #a32d2d; border-color: #a32d2d; }
+    button.primary:hover { background: #8f2626; }
+
+    .status { font-size: 12px; min-height: 18px; }
+    .status.ok { color: #7fd6ae; }
+    .status.err { color: #f09595; }
+    .status.busy { color: #9b9a94; }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 0.5px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .path { font-size: 11px; color: #77766f; margin-top: 14px; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h1>麦娘桌面 · 设置</h1>
+  <p class="hint">
+    需要一个麦当劳 MCP Token 才能让麦娘查券、查活动、看积分。
+    到 <a id="link-open" href="#">open.mcd.cn/mcp</a> 用手机号登录，控制台里一键生成。
+  </p>
+
+  <div class="field">
+    <label for="token">MCP Token</label>
+    <input id="token" type="password" placeholder="粘贴你的 MCP Token" autocomplete="off" spellcheck="false">
+  </div>
+
+  <div class="field">
+    <label for="city">常用城市（用于查附近门店）</label>
+    <input id="city" type="text" placeholder="例如：上海市" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label for="address">地标关键词（选填，例如：陆家嘴）</label>
+    <input id="address" type="text" placeholder="例如：陆家嘴" autocomplete="off">
+  </div>
+
+  <div class="field">
+    <label for="interval">主动播报间隔（分钟）</label>
+    <input id="interval" type="number" min="5" max="240" step="5">
+  </div>
+
+  <div class="row">
+    <button id="test">测试连接</button>
+    <span id="status" class="status"></span>
+  </div>
+
+  <div class="footer">
+    <span class="status" id="save-status"></span>
+    <span>
+      <button id="cancel">关闭</button>
+      <button id="save" class="primary">保存</button>
+    </span>
+  </div>
+
+  <p class="path" id="path"></p>
+
+  <script src="settings.js"></script>
+</body>
+</html>

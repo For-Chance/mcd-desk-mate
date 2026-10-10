@@ -1,0 +1,14 @@
+[
+  { "name": "query-my-account", "args": {}, "limit": 500, "save": "r-account.json" },
+  { "name": "available-coupons", "args": {}, "limit": 500, "save": "r-available-coupons.json" },
+  { "name": "query-my-coupons", "args": { "page": "1", "pageSize": "10" }, "limit": 600, "save": "r-my-coupons.json" },
+  { "name": "campaign-calendar", "args": {}, "limit": 700, "save": "r-campaign-calendar.json" },
+  { "name": "order-list", "args": {}, "limit": 600, "save": "r-order-list.json" },
+  { "name": "list-nutrition-foods", "args": {}, "limit": 400, "save": "r-nutrition.json" },
+  { "name": "query-nearby-stores", "args": { "beType": 1, "searchType": 2, "city": "上海市", "keyword": "陆家嘴" }, "limit": 500, "save": "r-stores.json" },
+  { "name": "query-lottery-info", "args": {}, "limit": 3000, "save": "r-lottery.json" },
+  { "name": "query-my-prizes", "args": { "pageNum": "1", "pageSize": "50" }, "limit": 2000, "save": "r-prizes.json" },
+  { "name": "now-time-info", "args": {}, "limit": 400, "save": "r-time.json" },
+  { "name": "draw-lottery", "args": {}, "note": "会被 verify-mcp.js 自动跳过：真实扣积分，验证脚本不代劳" }
+]
+

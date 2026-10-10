@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <!-- 奖品图来自 https://img.mcd.cn CDN，img-src 必须放行 https:，否则会被 CSP 拦掉 -->
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' 'unsafe-inline' data: file:; img-src 'self' data: file: https:; connect-src 'none';">
+  <title>麦娘 · 玩法面板</title>
+  <link rel="stylesheet" href="panel.css">
+</head>
+<body>
+  <div id="app">
+    <header id="top">
+      <div id="brand">
+        <span id="dot"></span>
+        <h1>麦娘的玩法面板</h1>
+      </div>
+      <nav id="tabs">
+        <button class="tab" data-mode="gacha">扭蛋机</button>
+        <button class="tab" data-mode="collection">收藏册</button>
+        <button class="tab" data-mode="feed">投喂</button>
+        <button class="tab" data-mode="quiz">猜热量</button>
+      </nav>
+    </header>
+
+    <main id="view">
+      <p class="loading">正在准备…</p>
+    </main>
+
+    <footer id="bar">
+      <span id="tip">数据全部来自麦当劳官方 MCP 的真实接口</span>
+      <button id="close" type="button">关闭</button>
+    </footer>
+  </div>
+
+  <script src="panel.js"></script>
+</body>
+</html>
